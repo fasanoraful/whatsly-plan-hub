@@ -6,7 +6,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <div className="text-whatsapp font-bold text-2xl">Whatsly</div>
+              <div className="text-whatsapp font-bold text-2xl">UniZap</div>
               <span className="bg-whatsapp text-white text-xs px-1.5 py-0.5 rounded-md">CRM</span>
             </div>
             <p className="text-gray-400 mb-4">
@@ -65,7 +65,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-800 pt-8 mt-8 text-center text-gray-500 text-sm">
-          <p>&copy; 2025 Whatsly CRM. Todos os direitos reservados.</p>
+          <p>&copy; 2025 UniZap CRM. Todos os direitos reservados.</p>
           <div className="flex justify-center gap-6 mt-4">
             <a href="#" className="hover:text-white transition-colors">Termos de Serviço</a>
             <a href="#" className="hover:text-white transition-colors">Política de Privacidade</a>

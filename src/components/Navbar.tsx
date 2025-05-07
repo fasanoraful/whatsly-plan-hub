@@ -9,7 +9,7 @@ const Navbar = () => {
     <nav className="bg-white py-4 px-6 md:px-10 fixed w-full top-0 z-50 shadow-sm">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="text-whatsapp font-bold text-2xl">Whatsly</div>
+          <div className="text-whatsapp font-bold text-2xl">UniZap</div>
           <span className="bg-whatsapp text-white text-xs px-1.5 py-0.5 rounded-md">CRM</span>
         </div>
         

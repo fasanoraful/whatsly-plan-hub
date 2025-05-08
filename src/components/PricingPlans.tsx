@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const paymentMethods = [
   {
@@ -77,6 +78,23 @@ const plans = [
 const PricingPlans = () => {
   const [selectedPlan, setSelectedPlan] = useState("semiannual");
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("credit-card");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const navigate = useNavigate();
+
+  const handlePayment = () => {
+    setIsProcessing(true);
+    
+    // Simulating payment process
+    setTimeout(() => {
+      // In a real implementation, this would be replaced with actual payment gateway integration
+      console.log("Payment processed for:", plans.find(p => p.id === selectedPlan)?.title);
+      console.log("Payment method:", selectedPaymentMethod);
+      
+      // Redirect to success page
+      window.location.href = "https://site.com/sucesso";
+      setIsProcessing(false);
+    }, 1500);
+  };
 
   return (
     <section id="pricing" className="py-20 px-6 bg-gray-50">
@@ -86,7 +104,7 @@ const PricingPlans = () => {
             Planos e <span className="text-highlight">preços</span> acessíveis
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Escolha o plano ideal para o seu negócio e comece a usar todos os recursos do Whatsly CRM.
+            Escolha o plano ideal para o seu negócio e comece a usar todos os recursos do UniZap CRM.
           </p>
         </div>
 
@@ -181,8 +199,12 @@ const PricingPlans = () => {
             </div>
           </div>
           
-          <Button className="w-full bg-whatsapp hover:bg-whatsappDark text-white py-6 text-lg">
-            Finalizar pagamento ({selectedPaymentMethod === "pix" ? "PIX" : "Cartão"})
+          <Button 
+            className="w-full bg-whatsapp hover:bg-whatsappDark text-white py-6 text-lg"
+            onClick={handlePayment}
+            disabled={isProcessing}
+          >
+            {isProcessing ? "Processando..." : `Finalizar pagamento (${selectedPaymentMethod === "pix" ? "PIX" : "Cartão"})`}
           </Button>
           
           <div className="mt-4 text-center text-sm text-gray-500">

@@ -1,4 +1,3 @@
-
 // Database connection utility
 interface DatabaseConfig {
   host: string;
@@ -10,10 +9,10 @@ interface DatabaseConfig {
 // This is a TypeScript representation of what would normally be handled by a backend service
 // In a production environment, these operations should be performed in a secure backend
 export const dbConfig: DatabaseConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'unizap_licenses'
+  host: import.meta.env.VITE_DB_HOST || 'localhost',
+  user: import.meta.env.VITE_DB_USER || 'root',
+  password: import.meta.env.VITE_DB_PASSWORD || '',
+  database: import.meta.env.VITE_DB_NAME || 'unizap_licenses'
 };
 
 export interface License {

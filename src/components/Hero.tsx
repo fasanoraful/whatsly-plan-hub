@@ -2,6 +2,16 @@
 import { Button } from "@/components/ui/button";
 
 const Hero = () => {
+  const handleScrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      window.scrollTo({
+        top: element.offsetTop - 80,
+        behavior: "smooth"
+      });
+    }
+  };
+
   return (
     <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-6 bg-hero-pattern">
       <div className="container mx-auto max-w-6xl">
@@ -22,10 +32,17 @@ const Hero = () => {
               Gerencie contatos, automatize mensagens e aumente suas vendas com nossa extensão profissional para WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="bg-whatsapp hover:bg-whatsappDark text-white px-8 py-6 text-lg">
+              <Button 
+                className="bg-whatsapp hover:bg-whatsappDark text-white px-8 py-6 text-lg"
+                onClick={() => handleScrollToSection("pricing")}
+              >
                 Começar agora
               </Button>
-              <Button variant="outline" className="border-whatsapp text-whatsapp hover:bg-whatsapp/10 px-8 py-6 text-lg">
+              <Button 
+                variant="outline" 
+                className="border-whatsapp text-whatsapp hover:bg-whatsapp/10 px-8 py-6 text-lg"
+                onClick={() => handleScrollToSection("how-it-works")}
+              >
                 Como funciona
               </Button>
             </div>

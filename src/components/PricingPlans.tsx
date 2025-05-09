@@ -1,8 +1,11 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import type { Plan, ClientInfo } from "@/types";
 
-const plans = [
+const plans: Plan[] = [
   {
     id: "monthly",
     title: "Mensal",
@@ -55,45 +58,70 @@ const plans = [
 const PricingPlans = () => {
   const [selectedPlan, setSelectedPlan] = useState("semiannual");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
+  const [clientInfo, setClientInfo] = useState<ClientInfo>({
+    name: "",
+    email: "",
+    whatsapp: ""
+  });
 
   const navigate = useNavigate();
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setClientInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const validateForm = (): boolean => {
+    if (!clientInfo.name || !clientInfo.email || !clientInfo.whatsapp) {
+      toast.error("Por favor, preencha todos os campos obrigatórios");
+      return false;
+    }
+    
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(clientInfo.email)) {
+      toast.error("Por favor, informe um e-mail válido");
+      return false;
+    }
+
+    return true;
+  };
+
   const handlePayment = async () => {
-    if (!name || !email || !whatsapp) {
-      alert("Por favor, preencha nome, e-mail e WhatsApp antes de prosseguir.");
+    if (!validateForm()) {
       return;
     }
 
     setIsProcessing(true);
 
-try {
-  const response = await fetch("https://unizap.fksolucoes.tech/api/create-preference.php", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      planId: selectedPlan,
-      name,
-      email,
-      whatsapp,
-    }),
-  });
+    try {
+      const response = await fetch("https://unizap.fksolucoes.tech/api/create-preference.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planId: selectedPlan,
+          name: clientInfo.name,
+          email: clientInfo.email,
+          whatsapp: clientInfo.whatsapp,
+        }),
+      });
 
-  const data = await response.json();
-  if (data.init_point) {
-    window.location.href = data.init_point;
-  } else {
-    throw new Error("Erro ao gerar link de pagamento.");
-  }
-} catch (error) {
-  console.error("Erro ao processar pagamento:", error);
-  setIsProcessing(false);
-}
-
+      const data = await response.json();
+      if (data.init_point) {
+        window.location.href = data.init_point;
+      } else {
+        throw new Error("Erro ao gerar link de pagamento.");
+      }
+    } catch (error) {
+      console.error("Erro ao processar pagamento:", error);
+      toast.error("Ocorreu um erro ao processar o pagamento. Por favor, tente novamente.");
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -112,7 +140,7 @@ try {
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className={`pricing-card ${plan.color} ${plan.id === selectedPlan ? "ring-2 ring-" + plan.color.replace("pricing-card-", "") : ""}`}
+              className={`pricing-card ${plan.color} ${plan.id === selectedPlan ? "ring-2 ring-" + plan.color.replace("pricing-card-", "") : ""} bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg relative cursor-pointer`}
               onClick={() => setSelectedPlan(plan.id)}
             >
               {plan.popular && (
@@ -171,27 +199,29 @@ try {
             </div>
           </div>
 
-          {/* FORMULÁRIO AQUI */}
           <div className="space-y-4 mb-6">
             <input
               type="text"
               placeholder="Seu nome completo"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              name="name"
+              value={clientInfo.name}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border rounded-lg"
             />
             <input
               type="email"
               placeholder="Seu e-mail"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="email"
+              value={clientInfo.email}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border rounded-lg"
             />
             <input
               type="tel"
               placeholder="WhatsApp com DDD"
-              value={whatsapp}
-              onChange={(e) => setWhatsapp(e.target.value)}
+              name="whatsapp"
+              value={clientInfo.whatsapp}
+              onChange={handleInputChange}
               className="w-full px-4 py-2 border rounded-lg"
             />
           </div>

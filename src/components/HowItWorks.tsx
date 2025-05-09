@@ -35,7 +35,7 @@ const HowItWorks = () => {
             Como <span className="text-highlight">funciona</span> nossa extensão
           </h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Comece a usar o Whatsly CRM em minutos com nosso processo simples de configuração e integração com o WhatsApp Web.
+            Comece a usar o UniZap CRM em minutos com nosso processo simples de configuração e integração com o WhatsApp Web.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ const HowItWorks = () => {
                   </div>
                   <div className="flex">
                     <div className="w-1/3 border-r border-gray-200 p-2">
-                      <div className="bg-whatsapp/10 rounded-lg p-2 text-whatsapp text-sm font-medium mb-2">Whatsly CRM</div>
+                      <div className="bg-whatsapp/10 rounded-lg p-2 text-whatsapp text-sm font-medium mb-2">UniZap CRM</div>
                       <div className="space-y-2">
                         <div className="bg-white p-2 rounded shadow-sm">
                           <div className="text-xs font-medium">Contatos</div>

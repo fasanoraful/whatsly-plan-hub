@@ -1,10 +1,11 @@
 
+import React from "react";
 import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 
-export default function SuccessPage() {
+const SuccessPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const licenseKey = searchParams.get("chave");
 
@@ -49,4 +50,6 @@ export default function SuccessPage() {
             <Footer />
         </div>
     );
-}
+};
+
+export default SuccessPage;

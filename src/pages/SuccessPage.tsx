@@ -4,10 +4,25 @@ import { useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Download } from "lucide-react";
 
 const SuccessPage: React.FC = () => {
     const [searchParams] = useSearchParams();
     const licenseKey = searchParams.get("chave");
+
+    const handleDownload = () => {
+        // Here you would normally link to your actual plugin file
+        // For now I'm creating a placeholder URL
+        const pluginUrl = "https://unizap.com/downloads/unizap-crm-plugin.zip";
+        
+        // Create a temporary link element to trigger the download
+        const link = document.createElement("a");
+        link.href = pluginUrl;
+        link.setAttribute("download", "unizap-crm-plugin.zip");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
         <div className="min-h-screen flex flex-col">
@@ -37,10 +52,19 @@ const SuccessPage: React.FC = () => {
                         </p>
                     </div>
 
-                    <div className="mt-8">
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+                        <Button
+                            onClick={handleDownload}
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                        >
+                            <Download className="mr-2" size={18} />
+                            Baixar Extensão
+                        </Button>
+                        
                         <Button
                             asChild
-                            className="bg-green-600 hover:bg-green-700 text-white"
+                            variant="outline"
+                            className="border-green-600 text-green-600 hover:bg-green-50"
                         >
                             <a href="/">Voltar para a Página Inicial</a>
                         </Button>

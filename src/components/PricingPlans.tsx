@@ -24,7 +24,7 @@ const plans: Plan[] = [
     id: "semiannual",
     title: "Semestral",
     price: 150.0,
-    originalPrice: 259.4,
+    originalPrice: 260,
     features: [
       "Acesso a todos os recursos avançados",
       "Até 3 números de WhatsApp",
@@ -40,13 +40,12 @@ const plans: Plan[] = [
     id: "annual",
     title: "Anual",
     price: 250.0,
-    originalPrice: 418.8,
+    originalPrice: 320,
     features: [
       "Acesso completo a todos os recursos",
       "Números de WhatsApp ilimitados",
       "Conversas ilimitadas",
       "Todas as automações",
-      "API para integrações",
       "Suporte 24/7 prioritário",
       "25% de desconto em relação ao plano semestral",
     ],
@@ -98,7 +97,7 @@ const PricingPlans = () => {
     setIsProcessing(true);
 
     try {
-      const response = await fetch("https://unizap.fksolucoes.tech/api/create-preference.php", {
+      const response = await fetch("/api/create-preference.php", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

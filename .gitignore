@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+SITE/api/create-preference.php
+SITE/api/mp-webhook.php
+SITE/robots.txt
+SITE/placeholder.svg
+SITE/index.html
+SITE/favicon.ico
+SITE/assets/index-Cmmm5r3w.js
+SITE/assets/index-BHlTh_2_.css

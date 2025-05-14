@@ -167,6 +167,8 @@ const PricingPlans = () => {
     setRenewMode(!renewMode);
     setUserFound(false);
     setPhoneNumber("");
+    // Reset the selected plan when toggling to renewal mode
+    setSelectedPlan(null);
   };
 
   const searchSubscription = async () => {
@@ -329,7 +331,7 @@ const PricingPlans = () => {
           </div>
         )}
 
-        {selectedPlan && (
+        {selectedPlan && !renewMode && (
           <div id="payment-form" className="mt-12 max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-8 animate-fadeIn">
             <div className="pt-3 mb-6">
               <div className="flex justify-between mb-2">
@@ -401,6 +403,49 @@ const PricingPlans = () => {
                   </div>
                 </>
               )}
+            </div>
+          </div>
+        )}
+
+        {selectedPlan && renewMode && userFound && (
+          <div id="payment-form" className="mt-12 max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-8 animate-fadeIn">
+            <div className="pt-3 mb-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Plano selecionado</span>
+                <span className="font-medium">
+                  {plans.find(p => p.id === selectedPlan)?.title}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Valor total</span>
+                <span className="font-bold text-xl">
+                  R$ {plans.find(p => p.id === selectedPlan)?.price.toFixed(2).replace(".", ",")}
+                </span>
+              </div>
+              {selectedPlan !== "free" && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+                  Sua renovação será processada imediatamente após o pagamento
+                </div>
+              )}
+            </div>
+
+            <Button
+              className="w-full bg-whatsapp hover:bg-whatsappDark text-white py-6 text-lg"
+              onClick={handlePayment}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processando..." : "Renovar Assinatura"}
+            </Button>
+
+            <div className="mt-4 text-center text-sm text-gray-500">
+              Pagamento seguro processado pelo MercadoPago
+              <div className="mt-2 flex justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <span>Ambiente seguro</span>
+              </div>
             </div>
           </div>
         )}

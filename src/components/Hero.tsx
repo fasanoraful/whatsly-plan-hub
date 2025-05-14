@@ -12,19 +12,15 @@ const Hero = () => {
     }
   };
 
+  const handleExtensionLink = async () => {
+    window.open('https://chromewebstore.google.com/detail/unizap-crm/agnfkilinikopmgnpdanalgpncadkfae?authuser=0&hl=pt-BR', '_blank');
+  }
+
   return (
     <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-6 bg-hero-pattern">
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-center">
           <div className="md:w-1/2">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="bg-whatsapp/10 text-whatsapp px-3 py-1 rounded-full text-sm font-medium">
-                Novo
-              </div>
-              <div className="text-sm text-gray-600">
-                Integração com múltiplos números
-              </div>
-            </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Transforme seu <span className="text-whatsapp">WhatsApp</span> em um poderoso CRM
             </h1>
@@ -32,14 +28,14 @@ const Hero = () => {
               Gerencie contatos, automatize mensagens e aumente suas vendas com nossa extensão profissional para WhatsApp.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
+              <Button
                 className="bg-whatsapp hover:bg-whatsappDark text-white px-8 py-6 text-lg"
-                onClick={() => handleScrollToSection("pricing")}
+                onClick={handleExtensionLink}
               >
-                Começar agora
+                Baixe Agora Mesmo o APP
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="border-whatsapp text-whatsapp hover:bg-whatsapp/10 px-8 py-6 text-lg"
                 onClick={() => handleScrollToSection("how-it-works")}
               >

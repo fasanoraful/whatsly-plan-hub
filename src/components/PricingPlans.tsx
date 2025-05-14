@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -113,8 +114,9 @@ const PricingPlans = () => {
       if (data.init_point) {
         // Open Mercado Pago checkout in a new tab
         window.open(data.init_point, '_blank');
-        // Keep the user on the current page
-        setIsProcessing(false);
+        
+        // Redirect to success page
+        navigate(`/sucesso?chave=${encodeURIComponent(clientInfo.email)}`);
       } else {
         throw new Error("Erro ao gerar link de pagamento.");
       }

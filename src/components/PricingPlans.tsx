@@ -1,10 +1,25 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import type { Plan, ClientInfo } from "@/types";
 
 const plans: Plan[] = [
+  {
+    id: "free",
+    title: "Teste Grátis",
+    price: 0.0,
+    features: [
+      "Acesso completo por 3 dias",
+      "1 número de WhatsApp",
+      "Conversas ilimitadas",
+      "Todas as automações",
+      "Suporte básico",
+    ],
+    color: "pricing-free",
+    popular: false,
+  },
   {
     id: "monthly",
     title: "Mensal",
@@ -56,20 +71,17 @@ const plans: Plan[] = [
 const PricingPlans = () => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [clientInfo, setClientInfo] = useState<ClientInfo>({
-    name: "",
-    email: "",
-    whatsapp: ""
-  });
+  const [clientInfo, setClientInfo] = useState<ClientInfo>({ name: "", email: "", whatsapp: "" });
+  const [renewMode, setRenewMode] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [userFound, setUserFound] = useState(false);
 
   const navigate = useNavigate();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setClientInfo(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setClientInfo(prev => ({ ...prev, [name]: value }));
   };
 
   const validateForm = (): boolean => {
@@ -77,68 +89,106 @@ const PricingPlans = () => {
       toast.error("Por favor, preencha todos os campos obrigatórios");
       return false;
     }
-
-    // Validação básica de email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(clientInfo.email)) {
       toast.error("Por favor, informe um e-mail válido");
       return false;
     }
-
     return true;
   };
 
   const handlePayment = async () => {
-    if (!validateForm()) {
+    if (!selectedPlan) return;
+
+    if (selectedPlan === "free" && !renewMode) {
+      navigate(`/sucesso?chave=${encodeURIComponent(clientInfo.email || "teste@gratuito.com")}`);
       return;
     }
 
-    setIsProcessing(true);
+    if (!renewMode && !validateForm()) return;
 
+    setIsProcessing(true);
     try {
       const response = await fetch("/api/create-preference.php", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: selectedPlan,
           name: clientInfo.name,
           email: clientInfo.email,
-          whatsapp: clientInfo.whatsapp,
+          whatsapp: renewMode ? phoneNumber : clientInfo.whatsapp,
         }),
       });
 
       const data = await response.json();
+
       if (data.init_point) {
-        // Open Mercado Pago checkout in a new tab
-        window.open(data.init_point, '_blank');
-
-        // Keep the user on the current page
-        setIsProcessing(false);
-
-        // Redirect to success page
-        navigate(`/sucesso?chave=${encodeURIComponent(data.license_response.message)}`);
+        window.open(data.init_point, "_blank");
+        navigate(`/sucesso?chave=${encodeURIComponent(data.license_response?.message || clientInfo.email)}`);
       } else {
         throw new Error("Erro ao gerar link de pagamento.");
       }
     } catch (error) {
       console.error("Erro ao processar pagamento:", error);
       toast.error("Ocorreu um erro ao processar o pagamento. Por favor, tente novamente.");
+    } finally {
       setIsProcessing(false);
     }
   };
 
   const selectPlan = (planId: string) => {
     setSelectedPlan(planId);
-    // Scroll to the form
     setTimeout(() => {
-      const formElement = document.getElementById('payment-form');
-      if (formElement) {
-        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      document.getElementById("payment-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   };
+
+  const toggleRenewMode = () => {
+    setRenewMode(!renewMode);
+    setUserFound(false);
+    setPhoneNumber("");
+    setSelectedPlan(null);
+  };
+
+  const searchSubscription = async () => {
+    if (!phoneNumber.trim()) {
+      toast.error("Por favor, informe um número de telefone válido");
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const response = await fetch("/api/search-renew.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ whatsapp: phoneNumber }),
+      });
+
+      const data = await response.json();
+      if (data.status === true) {
+        setUserFound(true);
+        toast.success("Assinatura encontrada! Escolha um plano para renovar.");
+        if (data.user) {
+          setClientInfo({
+            name: data.user.name || "",
+            email: data.user.email || "",
+            whatsapp: phoneNumber,
+          });
+        }
+      } else {
+        setUserFound(false);
+        toast.error("Nenhuma assinatura encontrada para este número.");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar assinatura:", error);
+      toast.error("Erro ao buscar sua assinatura. Tente novamente.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const filteredPlans = renewMode ? plans.filter(plan => plan.id !== "free") : plans;
+  const selectedPlanData = plans.find(p => p.id === selectedPlan);
 
   return (
     <section id="pricing" className="py-20 px-6 bg-gray-50">
@@ -150,138 +200,132 @@ const PricingPlans = () => {
           <p className="text-gray-600 max-w-2xl mx-auto">
             Escolha o plano ideal para o seu negócio e comece a usar todos os recursos do UniZap CRM.
           </p>
-        </div>
-
-        {/* Free Trial Banner */}
-        <div className="bg-whatsapp/10 border border-whatsapp rounded-lg p-4 mb-8 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-whatsapp">
-              <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>
-            </svg>
-            <h3 className="text-xl font-bold text-whatsappDark">Teste Grátis por 3 Dias!</h3>
-          </div>
-          <p className="text-gray-700">
-            Experimente qualquer plano sem compromisso por 3 dias. Cancele quando quiser sem custos adicionais.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan) => (
-            <div
-              key={plan.id}
-              className={`pricing-card ${plan.color} ${plan.id === selectedPlan ? "ring-2 ring-" + plan.color.replace("pricing-card-", "") : ""} bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg relative cursor-pointer`}
+          <div className="mt-6">
+            <Button
+              onClick={toggleRenewMode}
+              className={`${renewMode ? "bg-gray-600" : "bg-whatsapp"} hover:opacity-90`}
             >
-              {plan.popular && (
-                <div className="absolute top-0 right-0 bg-highlight text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                  Mais popular
-                </div>
-              )}
-              <h3 className="text-xl font-bold mb-2">{plan.title}</h3>
-              <div className="mb-4">
-                <span className="text-3xl font-bold">R$ {plan.price.toFixed(2).replace(".", ",")}</span>
-                {plan.originalPrice && (
-                  <span className="text-gray-500 line-through ml-2">
-                    R$ {plan.originalPrice.toFixed(2).replace(".", ",")}
-                  </span>
-                )}
-                {plan.id === "monthly" && <span className="text-gray-500 text-sm">/mês</span>}
-              </div>
-              <div className="mb-6">
-                <ul className="space-y-3">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-whatsapp mt-0.5">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                      <span className="text-gray-600 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                  <li className="flex items-start gap-2 text-whatsappDark font-medium">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-whatsapp mt-0.5">
-                      <polyline points="20 6 9 17 4 12"></polyline>
-                    </svg>
-                    <span className="text-sm">3 dias de teste grátis</span>
-                  </li>
-                </ul>
-              </div>
-              <Button
-                className={`w-full ${plan.id === selectedPlan
-                  ? "bg-whatsapp hover:bg-whatsappDark text-white"
-                  : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                  }`}
-                onClick={() => selectPlan(plan.id)}
-              >
-                {plan.id === selectedPlan ? "Selecionado" : "Selecionar"}
-              </Button>
-            </div>
-          ))}
+              {renewMode ? "Voltar para novos planos" : "Renovar assinatura existente"}
+            </Button>
+          </div>
         </div>
 
-        {selectedPlan && (
-          <div id="payment-form" className="mt-12 max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-8 animate-fadeIn">
-            <div className="pt-3 mb-6">
-              <div className="flex justify-between mb-2">
-                <span className="text-gray-600">Plano selecionado</span>
-                <span className="font-medium">
-                  {plans.find(p => p.id === selectedPlan)?.title}
-                </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Valor total</span>
-                <span className="font-bold text-xl">
-                  R$ {plans.find(p => p.id === selectedPlan)?.price.toFixed(2).replace(".", ",")}
-                </span>
-              </div>
-              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-                Seu período de teste grátis de 3 dias começa imediatamente após a finalização
-              </div>
-            </div>
-
-            <div className="space-y-4 mb-6">
-              <input
-                type="text"
-                placeholder="Seu nome completo"
-                name="name"
-                value={clientInfo.name}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                name="email"
-                value={clientInfo.email}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg"
-              />
-              <input
+        {renewMode ? (
+          <div className="max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 mb-10">
+            <h3 className="text-xl font-bold mb-4">Renovar sua assinatura</h3>
+            <p className="text-gray-600 mb-4">
+              Informe o número de WhatsApp associado à sua conta para renovar sua assinatura.
+            </p>
+            <div className="flex space-x-2">
+              <Input
                 type="tel"
                 placeholder="WhatsApp com DDD"
-                name="whatsapp"
-                value={clientInfo.whatsapp}
-                onChange={handleInputChange}
-                className="w-full px-4 py-2 border rounded-lg"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                className="flex-grow"
               />
+              <Button onClick={searchSubscription} disabled={isSearching} className="bg-whatsapp hover:bg-whatsappDark">
+                {isSearching ? "Buscando..." : "Buscar"}
+              </Button>
             </div>
+          </div>
+        ) : (
+          <div className="bg-whatsapp/10 border border-whatsapp rounded-lg p-4 mb-8 text-center">
+            <h3 className="text-xl font-bold text-whatsappDark mb-2">
+              Teste Grátis por 3 Dias!
+            </h3>
+            <p className="text-gray-700">
+              Experimente qualquer plano sem compromisso por 3 dias. Cancele quando quiser sem custos adicionais.
+            </p>
+          </div>
+        )}
+
+        {(!renewMode || (renewMode && userFound)) && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {filteredPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className={`pricing-card ${plan.color} ${plan.id === selectedPlan ? "ring-2 ring-" + plan.color.replace("pricing-", "") : ""} bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg relative cursor-pointer`}
+                onClick={() => selectPlan(plan.id)}
+              >
+                {plan.popular && (
+                  <div className="absolute top-0 right-0 bg-highlight text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
+                    Mais popular
+                  </div>
+                )}
+                <h3 className="text-xl font-bold mb-2">{plan.title}</h3>
+                <div className="mb-4">
+                  <span className="text-3xl font-bold">R$ {plan.price.toFixed(2).replace(".", ",")}</span>
+                  {plan.originalPrice && (
+                    <span className="text-gray-500 line-through ml-2">
+                      R$ {plan.originalPrice.toFixed(2).replace(".", ",")}
+                    </span>
+                  )}
+                </div>
+                <ul className="space-y-2 mb-6 text-sm text-gray-600">
+                  {plan.features.map((feature, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <span className="text-whatsapp mt-0.5">✔️</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                  {plan.id == "free" && !renewMode && (
+                    <li className="flex items-start gap-2 text-whatsappDark font-medium">
+                      <span className="mt-0.5">🎁</span>
+                      <span>3 dias de teste grátis</span>
+                    </li>
+                  )}
+                </ul>
+                <Button
+                  className={`w-full ${plan.id === selectedPlan
+                    ? "bg-whatsapp hover:bg-whatsappDark text-white"
+                    : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+                    }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectPlan(plan.id);
+                  }}
+                >
+                  {plan.id === selectedPlan ? "Selecionado" : "Selecionar"}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {selectedPlan && (!renewMode || userFound) && (
+          <div id="payment-form" className="mt-12 max-w-2xl mx-auto bg-white rounded-xl shadow-md p-6 md:p-8">
+            <div className="mb-6">
+              <div className="flex justify-between mb-2">
+                <span className="text-gray-600">Plano selecionado:</span>
+                <span className="font-medium">{selectedPlanData?.title}</span>
+              </div>
+              <div className="flex justify-between text-xl font-bold">
+                <span>Valor:</span>
+                <span>R$ {selectedPlanData?.price.toFixed(2).replace(".", ",")}</span>
+              </div>
+              {selectedPlan !== "free" && !renewMode && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+                  Seu período de teste grátis de 3 dias começa imediatamente após a finalização
+                </div>
+              )}
+            </div>
+
+            {!renewMode && (
+              <div className="space-y-4 mb-6">
+                <Input type="text" name="name" placeholder="Nome completo" value={clientInfo.name} onChange={handleInputChange} />
+                <Input type="email" name="email" placeholder="E-mail" value={clientInfo.email} onChange={handleInputChange} />
+                <Input type="tel" name="whatsapp" placeholder="WhatsApp com DDD" value={clientInfo.whatsapp} onChange={handleInputChange} />
+              </div>
+            )}
 
             <Button
-              className="w-full bg-whatsapp hover:bg-whatsappDark text-white py-6 text-lg"
               onClick={handlePayment}
               disabled={isProcessing}
+              className="w-full bg-whatsapp hover:bg-whatsappDark text-white text-lg"
             >
-              {isProcessing ? "Processando..." : "Finalizar"}
+              {isProcessing ? "Processando..." : "Finalizar pagamento"}
             </Button>
-
-            <div className="mt-4 text-center text-sm text-gray-500">
-              Pagamento seguro processado pelo MercadoPago
-              <div className="mt-2 flex justify-center gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-                </svg>
-                <span>Ambiente seguro</span>
-              </div>
-            </div>
           </div>
         )}
       </div>

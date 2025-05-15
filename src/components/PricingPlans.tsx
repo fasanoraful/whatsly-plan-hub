@@ -109,13 +109,13 @@ const PricingPlans = () => {
   };
 
   const handlePayment = async () => {
-    if (selectedPlan === "free") {
+    if (selectedPlan === "free" && !renewMode) {
       // Para o plano gratuito, redirecionamos diretamente para a página de sucesso
       navigate(`/sucesso?chave=${encodeURIComponent(clientInfo.email || "teste@gratuito.com")}`);
       return;
     }
 
-    if (!validateForm()) {
+    if (!renewMode && !validateForm()) {
       return;
     }
 
@@ -131,7 +131,7 @@ const PricingPlans = () => {
           planId: selectedPlan,
           name: clientInfo.name,
           email: clientInfo.email,
-          whatsapp: clientInfo.whatsapp,
+          whatsapp: renewMode ? phoneNumber : clientInfo.whatsapp,
         }),
       });
 
@@ -216,6 +216,9 @@ const PricingPlans = () => {
     }
   };
 
+  // Filtrar planos para não mostrar o teste grátis na renovação
+  const filteredPlans = renewMode ? plans.filter(plan => plan.id !== "free") : plans;
+
   return (
     <section id="pricing" className="py-20 px-6 bg-gray-50">
       <div className="container mx-auto max-w-6xl">
@@ -277,10 +280,11 @@ const PricingPlans = () => {
 
         {(!renewMode || (renewMode && userFound)) && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {plans.map((plan) => (
+            {filteredPlans.map((plan) => (
               <div
                 key={plan.id}
                 className={`pricing-card ${plan.color} ${plan.id === selectedPlan ? "ring-2 ring-" + plan.color.replace("pricing-card-", "") : ""} bg-white rounded-xl shadow-md p-6 transition-all hover:shadow-lg relative cursor-pointer`}
+                onClick={() => selectPlan(plan.id)}
               >
                 {plan.popular && (
                   <div className="absolute top-0 right-0 bg-highlight text-white text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
@@ -307,7 +311,7 @@ const PricingPlans = () => {
                         <span className="text-gray-600 text-sm">{feature}</span>
                       </li>
                     ))}
-                    {plan.id !== "free" && (
+                    {plan.id !== "free" && !renewMode && (
                       <li className="flex items-start gap-2 text-whatsappDark font-medium">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-whatsapp mt-0.5">
                           <polyline points="20 6 9 17 4 12"></polyline>
@@ -422,11 +426,9 @@ const PricingPlans = () => {
                   R$ {plans.find(p => p.id === selectedPlan)?.price.toFixed(2).replace(".", ",")}
                 </span>
               </div>
-              {selectedPlan !== "free" && (
-                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
-                  Sua renovação será processada imediatamente após o pagamento
-                </div>
-              )}
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md text-sm text-green-700">
+                Sua renovação será processada imediatamente após o pagamento
+              </div>
             </div>
 
             <Button

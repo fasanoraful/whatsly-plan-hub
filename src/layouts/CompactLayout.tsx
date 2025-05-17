@@ -28,3 +28,5 @@ const CompactLayout = ({ children }: CompactLayoutProps) => {
     </div>
   );
 };
+
+export default CompactLayout

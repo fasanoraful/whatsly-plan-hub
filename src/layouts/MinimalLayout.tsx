@@ -31,3 +31,5 @@ const MinimalLayout = ({ children }: MinimalLayoutProps) => {
     </div>
   );
 };
+
+export default MinimalLayout

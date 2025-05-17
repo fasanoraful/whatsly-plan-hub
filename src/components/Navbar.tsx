@@ -1,27 +1,22 @@
-
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import LayoutSwitcher from "./LayoutSwitcher";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Function to handle smooth scrolling to anchors
   const handleSmoothScroll = (e: React.MouseEvent<HTMLAnchorElement>, targetId: string) => {
     e.preventDefault();
 
     const targetElement = document.getElementById(targetId);
     if (targetElement) {
-      // Close the mobile menu if it's open
       setIsMenuOpen(false);
-
-      // Smooth scroll to the element
       window.scrollTo({
-        top: targetElement.offsetTop - 80, // Offset for the navbar
+        top: targetElement.offsetTop - 80,
         behavior: "smooth"
       });
     }
   };
-
 
   return (
     <nav className="bg-white py-4 px-6 md:px-10 fixed w-full top-0 z-50 shadow-sm">
@@ -32,6 +27,7 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-8">
+          <LayoutSwitcher />
           <a
             href="#pricing"
             className="bg-whatsapp hover:bg-whatsappDark text-white px-4 py-3 text-lg rounded"
@@ -62,7 +58,6 @@ const Navbar = () => {
           </a>
         </div>
 
-        {/* Mobile menu button */}
         <button
           className="md:hidden text-gray-600"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -79,10 +74,10 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-md py-4 px-6">
           <div className="flex flex-col gap-4">
+            <LayoutSwitcher />
             <a
               href="#features"
               className="text-gray-600 hover:text-whatsapp transition-colors"

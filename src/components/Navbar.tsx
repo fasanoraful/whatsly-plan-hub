@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import LayoutSwitcher from "./LayoutSwitcher";
+import { useState } from "react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -27,7 +26,6 @@ const Navbar = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-8">
-          <LayoutSwitcher />
           <a
             href="#pricing"
             className="bg-whatsapp hover:bg-whatsappDark text-white px-4 py-3 text-lg rounded"
@@ -77,7 +75,6 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden absolute top-full left-0 w-full bg-white shadow-md py-4 px-6">
           <div className="flex flex-col gap-4">
-            <LayoutSwitcher />
             <a
               href="#features"
               className="text-gray-600 hover:text-whatsapp transition-colors"
